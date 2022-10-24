@@ -25,8 +25,21 @@ const personInfo = useRef({name:person.name, number:person.number})
         </td></>
         :
         <>
-        <td className='persons-name'><input placeholder={person.name} onChange={e=>inputInfoHandler({name:e.target.value})} className='person-input'/></td>
-        <td className='persons-number'><input placeholder={person.number} onChange={e=>inputInfoHandler({number:e.target.value})} className='person-input'/></td>
+        <td className='persons-name'>
+          <input
+          placeholder={person.name}
+          onChange={e=>inputInfoHandler({name:e.target.value})}
+          className='person-input'
+          defaultValue={person.name}
+          />
+          </td>
+        <td className='persons-number'>
+          <input placeholder={person.number}
+          onChange={e=>inputInfoHandler({number:e.target.value})}
+          className='person-input'
+          defaultValue={person.number}
+          />
+          </td>
         </>
         }
 

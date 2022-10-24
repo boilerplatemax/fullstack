@@ -1,0 +1,20 @@
+.message{
+  position: fixed;
+  top:0;
+  width:100%;
+  text-align: center;
+  font-weight: light;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+}
+.message>button{
+margin-top: 5px;
+}
+.message-error{
+background-color: lightcoral;
+}
+.message-success{
+  background-color: lightgreen;
+}

@@ -1,0 +1,16 @@
+.personform__input{
+    height: 30px;
+    width: 100%;
+  }
+  
+  .personform__form{
+    position: relative;
+    display: flex;
+    justify-content: space-between;
+    gap:10px;
+    flex-direction: row;
+    width: 100%;
+  }
+  .personform__row-item{
+    width: 100%;
+  }

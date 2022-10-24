@@ -4,9 +4,7 @@ import PersonForm from './components/PersonForm'
 import Persons from './components/Persons'
 import Filter from './components/Filter'
 import Message from './components/Message'
-import './App.css'
-
-
+import './CSS/App.css'
 
 const App = () => {
   const [persons, setPersons] = useState([])
@@ -17,7 +15,7 @@ const App = () => {
   useEffect(()=>{
     refreshContacts()
   },[])
-  const sendMessage=(displayMessage, delay=10000)=>{
+  const sendMessage=(displayMessage, delay=100000)=>{
     setMessage(displayMessage)
     setTimeout(() => {
       setMessage(null)
@@ -38,32 +36,33 @@ const App = () => {
     personService.remove(id)
     .then(response=>{
       sendMessage(`${personName} was removed from contacts`)
+      const filteredPersons=persons.filter(person=>person.id!==id)
+      setPersons(filteredPersons)
     })
-    .catch(err=>{
+    .catch(error=>{
       sendMessage(`[ERROR] User not found`)
     })
-    const filteredPersons=persons.filter(person=>person.id!==id)
-    setPersons(filteredPersons)
   }
   const inputInfoHandler=newInfo=>{
     personInfo.current={...personInfo.current, ...newInfo}
   }
+  const alreadyHasName=(name)=>{
+    if(persons.filter(person=>person.name===name).length>0)return true
+  }
   const submitHandler=e=>{
     e.preventDefault()
-    const name = personInfo.current.name
-    const alreadyHasName = persons.filter(person=>person.name===name).length>0
-    if(alreadyHasName){
-      sendMessage(`[ERROR] ${name} is already added to phonebook`)
+    if(alreadyHasName(personInfo.current.name)){
+      sendMessage(`[ERROR] ${personInfo.current.name} is already added to phonebook`)
       return
     }
       personService.create(personInfo.current)
-      .then(()=> {
+      .then(response=> {
         setPersons(persons.concat(personInfo.current))
         personInfo.current={name:'',number:''}
-        sendMessage(`New contact: ${name} was successfully added`)
+        sendMessage(`New contact: ${response.name} was added successfully`)
       })
       .catch(error => {
-        sendMessage(`[ERROR] Could not create contact. Include more data`)
+        sendMessage(`[ERROR] ${error.response.data.error}`)
         console.log(error.response.data)
       })
 
@@ -74,28 +73,33 @@ const App = () => {
     setSearchFilters(filter)
   }
   const updateHandler = (id,newInfo) =>{
+    const personName=getNameFromId(id)
     personService.update(id,newInfo)
-    .then((res)=>{
-      const personName=getNameFromId(id)
-      sendMessage(`${personName} was successfully updated to ${newInfo.name}`)
-      setPersons(res)
+    .then(response=>{
+      sendMessage(`${personName} was successfully updated`)
+      setPersons(response)
     })
-    .catch(()=>{
+    .catch(error=>{
+      console.log(error)
       const personName=getNameFromId(id)
-      sendMessage(`[ERROR] Unable to update ${personName}`)
+      if(alreadyHasName(personName)){
+        sendMessage(`[ERROR] ${newInfo.name} is already in your contacts`)
+        return
+      }
+      sendMessage(`[ERROR] ${error.response.data.error}`)
     })
     
   }
-
   const personsToShow = searchFilters===''?persons:persons.filter(person=>(person.name.toLowerCase()).includes(searchFilters.toLowerCase()))
   return (
     <div className='app'>
       <div className='phonebook'>
-      <Message message={message}/>
-      <h2>React Phonebook</h2>
-      <PersonForm submitHandler={submitHandler} inputInfoHandler={inputInfoHandler}/>
-      
-      <Filter filterHandler={filterHandler}/>
+      <Message message={message} setMessage={setMessage}/>
+      <div className='phonebook__header'>
+        <h1 className='title'>React Phonebook</h1>
+        <PersonForm submitHandler={submitHandler} inputInfoHandler={inputInfoHandler}/>
+        <Filter filterHandler={filterHandler}/>
+      </div>
       <Persons personsToShow={personsToShow} removeHandler={removeHandler} updateHandler={updateHandler} inputInfoHandler={inputInfoHandler}/>
       </div>
     </div>
@@ -104,28 +108,3 @@ const App = () => {
 }
 
 export default App
-
-// {
-//   "persons": [
-//     {
-//       "name": "Miles Morales",
-//       "number": "212-531-7705",
-//       "id": 1
-//     },
-//     {
-//       "name": "Walter White",
-//       "number": "505-193-2475",
-//       "id": 2
-//     },
-//     {
-//       "name": "Dwight Schrute",
-//       "number": "1-800-644-6437",
-//       "id": 3
-//     },
-//     {
-//       "name": "Marge Simpson",
-//       "number": "409-630-2403",
-//       "id": 4
-//     }
-//   ]
-// }

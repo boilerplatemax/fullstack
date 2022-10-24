@@ -1,0 +1,21 @@
+.persons-table{
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    text-align: left;
+  }
+  .persons-row,.persons-header,.button-group{
+    height: 60px;
+  }
+  
+  .persons-row:nth-child(odd){
+    background-color: whitesmoke;
+  }
+  .persons-header{
+    background-color: dodgerblue;
+    color:white;
+  }
+  .persons-name,.persons-number{
+    width: 40%;
+    padding:0px 20px;
+  }

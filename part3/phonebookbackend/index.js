@@ -1,107 +1,122 @@
 const express = require('express')
-const morgan =require('morgan')
 const app = express()
-app.use(express.static('build'))
 const cors = require('cors')
+require('dotenv').config();
+const morgan = require('morgan')
+const Person = require('./models/person')
+
 app.use(cors())
-
-app.use(morgan('combined'))
-let contacts = {
-  persons: [
-    {
-      name: "Zlatan ibra",
-      number: "46-643-463",
-      id: 1
-    },
-    {
-      name: "ToTorz",
-      number: "56-443-63",
-      id: 2
-    },
-    {
-      name: "Jean Dujardin",
-      number: "86-865-8656",
-      id: 3
-    },
-    {
-      name: "totoro",
-      number: "64-635-8375",
-      id: 4
-    }
-  ]
-}
-
 app.use(express.json())
+app.use(express.static('build'))
 
-app.get('/info', (req, res) => {
-  res.send(`<h1>Notebook has info for ${contacts.persons.length} people</h1>${new Date()}`)
+app.use(morgan((tokens, req, res) => {
+    return [
+      tokens.method(req, res),
+      tokens.url(req, res),
+      tokens.status(req, res),
+      tokens.res(req, res, 'content-length'), '-',
+      tokens['response-time'](req, res), 'ms',
+      JSON.stringify(req.body)
+    ].join(' ')
+  }))
+//info page
+app.get('/info', (request, response) => {
+    const currentDate = new Date().toLocaleString();
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone
+    Person.find({}).then(persons => {
+        response.send(
+            `
+            <div>
+                <p>Phonebook has info for ${persons.length} people</p>
+            </div>
+            <div>
+                <p>${currentDate} (${timeZone})</p>
+            </div>`
+        )
+        })
 })
+//all persons
+app.get('/api/persons', (request, response) => {
+  Person.find({}).then(persons => {
+    response.json(persons.map(person => person.toJSON()))
+  })
+})
+//person by id
+app.get('/api/persons/:id', (request, response, next) => {
+    Person.findById(request.params.id)
+    .then(person => {
+        if (person) {
+            response.json(person.toJSON())
+          } else {
+            response.status(404).end()
+          }
+    })
+    .catch(error => next(error))
+})
+//delete
+app.delete('/api/persons/:id', (request, response, next) => {
+    Person.findByIdAndRemove(request.params.id)
+    .then(() => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+})
+//post/add new person
+app.post('/api/persons', (request, response, next) => {
+    const body = request.body
+    const personName = body.name
+    const personNumber = body.number
 
-const generateId = () => {
-  const maxId = contacts.persons.length > 0
-    ? Math.max(...contacts.persons.map(n => n.id))
-    : 0
-  return maxId + 1
+    if (Object.keys(body).length === 0) {
+        return response.status(400).json({
+          error: 'content missing'
+        })
+    }
+
+    const person = new Person({
+        name: personName,
+        number: personNumber
+        })
+    person.save()
+    .then(savedPerson =>  savedPerson.toJSON())
+    .then(savedAndFormattedPerson => {
+        console.log(`added ${person.name} number ${person.number} to phonebook`)
+        response.json(savedAndFormattedPerson)
+        })
+    .catch(error => next(error))
+})
+//edit person
+app.put('/api/persons/:id', (request, response, next) => {
+    const body = request.body
+
+    const person = {
+      name: body.name,
+      number: body.number,
+    }
+
+    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+      .then(() => {
+        Person.find({}).then(persons => {
+          response.json(persons.map(person => person.toJSON()))
+          })
+      })
+      .catch(error => next(error))
+  })
+
+const errorHandler = (error, request, response, next) => {
+    console.error(error.message)
+
+    if (error.name === 'CastError') {
+        return response.status(400).send({ error: 'malformatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+      }
+      next(error)
 }
 
-app.post('/api/persons', morgan('combined'),(request, response) => {
-  const body = request.body
-  if(!body.name||!body.number){
-    return response.status(400).json({ 
-        error: 'name or number missing' 
-      })
-  }
-  const name = body.name
-  console.log(name)
-  if(contacts.persons.filter(person=>person.name===name).length>0){
-    return response.status(400).json({ error: 'name must be unique' })
-  }
-  const note = {
-    name: body.name,
-    number: body.number,
-    id: generateId(),
-  }
-
-  contacts.persons = contacts.persons.concat(note)
-
-  response.json(note)
-})
-//put request
-app.put('/api/persons/:id', morgan('combined'),(request, response) => {
-  const id = Number(request.params.id)
-  const body = request.body
-  const changeIndex = contacts.persons.findIndex(item => item.id === id)
-  const updatedNote = {
-    name: body.name,
-    number: body.number,
-    id: generateId(),
-  }
-  contacts.persons[changeIndex]=updatedNote
-  response.json(contacts)
-})
-
-app.get('/api/persons', (req, res) => {
-  res.json(contacts)
-})
-
-app.delete('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  contacts.persons = contacts.persons.filter(person => person.id !== id)
-  response.status(204).end()
-})
-
-app.get('/api/persons/:id', (request, response) => {
-  const id = Number(request.params.id)
-  const note = contacts.persons.find(person => person.id === id)
-  if (note) {
-    response.json(note)
-  } else {
-    response.status(404).end()
-  }
-})
-
+app.use(errorHandler)
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`)
+    console.log(`Server running on port ${PORT}`)
 })

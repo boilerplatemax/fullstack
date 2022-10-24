@@ -10,22 +10,23 @@ const Persons=({personsToShow, removeHandler, updateHandler})=>{
     return(
       <table className='persons-table'>
         <thead className='persons-header'>
+          <tr>
           <td className='persons-name'>
             Name
           </td>
           <td className='persons-number'>
             Number
           </td>
-          <td></td>
-
+          <td className='persons-number'>
+            Actions
+          </td>
+          </tr>
         </thead>
         <tbody>
       {
-        personsToShow.length>=0?
+        personsToShow.length>0?
         personsToShow.map((person)=>{return(
-          
         <Person key={person.name} updateHandler={updateHandler} removeHandler={removeHandler} person={person}/>
-  
         )
       }):null
       }
