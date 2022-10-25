@@ -2,7 +2,7 @@
 //inputs have place holders
 //pass input vals to update handler as an object
 //in app.js updatehandler
-import React,{useState} from "react"
+import React from "react"
 import Person from "./Person"
 
 const Persons=({personsToShow, removeHandler, updateHandler})=>{
