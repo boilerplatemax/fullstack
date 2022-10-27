@@ -1,48 +1,77 @@
-const blogsRouter = require('express').Router()
+const blogRouter = require('express').Router()
+const logger = require('../utils/logger')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
-blogsRouter.get('/', async (request, response) => {
-  const blogs = await Blog.find({})
-  response.json(blogs)
-})
+blogRouter.get('/', async (request, response) => {
+    const blogs = await Blog.find({}).populate('user', { username: 1, name: 1, id:1})
+    response.json(blogs.map(blog => blog.toJSON()))
+  })
 
-blogsRouter.post('/', async (request, response) => {
-  const body = request.body
-  
-if(!body.likes){
-    body.likes = 0
+blogRouter.post('/', async (request, response, next) => {
+    const body = request.body
+
+    const users = await User.find({})
+    const currentUser = users.filter(u=>u.username===body.username)[0]
+    
+    if(!body.title||!body.url)response.status(400).json({error:'provide a title and url'})
+
+    if(!body.username)response.status(400).json({error:'no username provided'})
+
+    if (!body.likes) {
+        body.likes = 0
     }
 
-  const blog = new Blog({
-    title: body.title,
-    author:body.author,
-    url:body.url,
-    likes:body.likes
+    const blog = new Blog({
+        title: body.title,
+        author: body.author,
+        url: body.url,
+        likes: body.likes,
+        user: currentUser._id
+    })
+
+    try {
+        const savedBlog = await blog.save()
+        logger.info(`added ${blog.title} to the blog list`)
+        currentUser.blogs = currentUser.blogs.concat(savedBlog._id)
+        await currentUser.save()
+        logger.info(`blog linked to user ${currentUser.username}`)
+        response.json(savedBlog.toJSON())
+    } catch(exception) {
+        next(exception)
+    }
+})
+
+blogRouter.delete('/:id', async (request, response, next) => {
+    try {
+      await Blog.findByIdAndRemove(request.params.id)
+      response.status(204).end()
+    } catch (exception) {
+      next(exception)
+    }
   })
-  const valid=(body.title&&body.url)?true:false
-  
-  if(valid){
-    const savedBlog = await blog.save()
-    response.status(201).json(savedBlog)
-  }
-  else{
-    response.status(400).end()
-  }
-  
+
+blogRouter.put('/:id', async (request, response, next) => {
+    const body = request.body
+
+    if (!body.likes) {
+        body.likes = 0
+    }
+
+    const blog = {
+        title: body.title,
+        author: body.author,
+        url: body.url,
+        likes: body.likes
+    }
+
+    try {
+        const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
+        logger.info(`blog ${blog.title} successfully updated`)
+        response.json(updatedBlog.toJSON())
+    } catch (exception) {
+        next(exception)
+    }
 })
 
-blogsRouter.get('/:id', async (request, response) => {
-  const blog = await Blog.findById(request.params.id)
-  if (blog) {
-    response.json(blog)
-  } else {
-    response.status(404).end()
-  }
-})
-
-blogsRouter.delete('/:id', async (request, response) => {
-  await Blog.findByIdAndRemove(request.params.id)
-  response.status(204).end()
-})
-
-module.exports = blogsRouter
+module.exports = blogRouter
