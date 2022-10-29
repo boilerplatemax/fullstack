@@ -15,7 +15,7 @@ blogRouter.post('/', async (request, response, next) => {
     const user = await User.findById(decodedToken.id)
 
     if(!body.title||!body.url)response.status(400).json({error:'provide a title and url'})
-    if(!body.username)response.status(400).json({error:'no username provided'})
+    if(!body.user)response.status(400).json({error:'no username provided'})
 
     if (!body.likes) {
         body.likes = 0
