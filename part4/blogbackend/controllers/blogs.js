@@ -4,7 +4,6 @@ const Blog = require('../models/blog')
 const User = require('../models/user')
 const jwt = require('jsonwebtoken')
 
-
 blogRouter.get('/', async (request, response) => {
     const blogs = await Blog.find({}).populate('user', { username: 1, name: 1, id:1})
     response.json(blogs.map(blog => blog.toJSON()))
@@ -12,13 +11,10 @@ blogRouter.get('/', async (request, response) => {
 
 blogRouter.post('/', async (request, response, next) => {
     const body = request.body
-
     const decodedToken = jwt.verify(request.token, process.env.SECRET)
-
     const user = await User.findById(decodedToken.id)
-    
-    if(!body.title||!body.url)response.status(400).json({error:'provide a title and url'})
 
+    if(!body.title||!body.url)response.status(400).json({error:'provide a title and url'})
     if(!body.username)response.status(400).json({error:'no username provided'})
 
     if (!body.likes) {
