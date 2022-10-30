@@ -26,7 +26,7 @@ blogRouter.post('/', async (request, response, next) => {
         author: body.author,
         url: body.url,
         likes: body.likes,
-        user: user._id
+        user: body.user
     })
 
     try {
@@ -42,11 +42,15 @@ blogRouter.post('/', async (request, response, next) => {
 })
 
 blogRouter.delete('/:id', async (request, response, next) => {
-
+    const body=request.body
     const token = request.token
     const decodedToken = jwt.verify(token, process.env.SECRET)
     const user = await User.findById(decodedToken.id)
     const blogToDelete = await Blog.findById(request.params.id)
+    
+    console.log('deleting blog with id ',blogToDelete.user._id)
+
+
     //check if user objects are equal. This prevents other users from deleting your content
     if ( blogToDelete.user._id.toString() === user._id.toString() ) {
     try {
@@ -64,7 +68,7 @@ blogRouter.delete('/:id', async (request, response, next) => {
 
 blogRouter.put('/:id', async (request, response, next) => {
     const body = request.body
-
+    
     if (!body.likes) {
         body.likes = 0
     }
@@ -72,17 +76,26 @@ blogRouter.put('/:id', async (request, response, next) => {
     const token = request.token
     const decodedToken = jwt.verify(token, process.env.SECRET)
     const user = await User.findById(decodedToken.id)
-    const blogToUpdate = await Blog.findById(request.params.id)
-
     
-    if ( blogToUpdate.user._id.toString() === user._id.toString() ) {
+    if(user.likedBlogs.includes(body.id)){
+        user.likedBlogs=user.likedBlogs.filter(b=>b!==body.id)
+    }
+    else{
+        user.likedBlogs=user.likedBlogs.concat(body.id)
+    }
+
+    await user.save()
+
+    //blogToUpdate.user._id.toString() === user._id.toString()
+    if (true) {
     const blog = {
         title: body.title,
         author: body.author,
         url: body.url,
-        likes: body.likes
+        likes: body.likes,
+        user:body.user.id,
+        id:body.id
     }
-
     try {
         const updatedBlog = await Blog.findByIdAndUpdate(request.params.id, blog, { new: true })
         logger.info(`blog ${blog.title} successfully updated`)
@@ -96,3 +109,4 @@ blogRouter.put('/:id', async (request, response, next) => {
 })
 
 module.exports = blogRouter
+    // if (blogToUpdate.user._id.toString() === user._id.toString()) {

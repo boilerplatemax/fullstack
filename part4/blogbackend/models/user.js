@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
       ref: 'Blog'
     }
   ],
+  likedBlogs:Array
 })
 
 userSchema.set('toJSON', {
