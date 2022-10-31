@@ -4,17 +4,22 @@ const [blogContentVisible,setBlogContentVisible]=useState(false)
     return (
       <>
       <div className="blog">
-        <div>{blog.title}
-
-        <button onClick={()=>setBlogContentVisible(visible=>!visible)}>
+        <div className='blog__header'>
+          <div>{blog.title}
+          <div>{blog.author}</div>
+        </div>
+        <button
+        onClick={()=>setBlogContentVisible(visible=>!visible)}>
         {blogContentVisible?'hide':'show'}
         </button>
         </div>
-        {blogContentVisible&&<div>
+        {blogContentVisible&&<div className='blog__body'>
           <div>{blog.url}</div>
-          <div>{blog.author}</div>
+
           <div>{blog.likes}</div>
-          <button onClick={()=>likeBlog(blog)}>
+          <button
+          className='btn-like'
+          onClick={()=>likeBlog(blog)}>
             {likedBlogs.includes(blog.id)?'Unlike':'Like'}
             </button>
             

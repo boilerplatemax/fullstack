@@ -5,6 +5,7 @@ import Notification from './components/Notification'
 import Footer from './components/Footer'
 import LoginForm from './components/LoginForm'
 import Togglable from './components/Togglable'
+import BlogForm from './components/BlogForm'
 
 import blogService from './services/blogService'
 import loginService from './services/login'
@@ -118,21 +119,7 @@ const getLikedBlogs = async(id)=>{
   const blogs = await userService.getLikedBlogs(id)
   setLikedBlogs(blogs)
 }
-  const blogForm=()=>{
-    return(
-    <form onSubmit={addBlog}>
-      <label>Title</label>
-    <input
-      onChange={(e)=>handleBlogChange({title:e.target.value})}
-    />
-    <label>Url</label>
-      <input
-      onChange={(e)=>handleBlogChange({url:e.target.value})}
-    />
-    <button type="submit">save</button>
-  </form>
-  )
-  }
+
   const logOut=()=>{
     window.localStorage.removeItem('loggedblogappUser')
     setUser(null)
@@ -154,7 +141,7 @@ const getLikedBlogs = async(id)=>{
     /> :
       <div>
         <p>{user.name} logged in</p>
-        <Togglable buttonLabel="Add new blog" ref={blogFormRef}>{blogForm()}</Togglable>
+        <Togglable buttonLabel="Add new blog" ref={blogFormRef}>{<BlogForm handleBlogChange={handleBlogChange} addBlog={addBlog}/>}</Togglable>
         <button onClick={logOut}>log out</button>
       </div>
       }
