@@ -5,6 +5,7 @@ const [blogContentVisible,setBlogContentVisible]=useState(false)
       <>
       <div className="blog">
         <div>{blog.title}
+
         <button onClick={()=>setBlogContentVisible(visible=>!visible)}>
         {blogContentVisible?'hide':'show'}
         </button>
@@ -16,7 +17,8 @@ const [blogContentVisible,setBlogContentVisible]=useState(false)
           <button onClick={()=>likeBlog(blog)}>
             {likedBlogs.includes(blog.id)?'Unlike':'Like'}
             </button>
-          {blog.user.id===user.id||blog.user===user.id?<button onClick={()=>deleteBlog(blog)}>Delete</button>:null}
+            
+          {blog.user.id===user.id?<button onClick={()=>deleteBlog(blog)}>Delete</button>:null}
           {console.log('blog.user',blog.user)}
 
         </div>}

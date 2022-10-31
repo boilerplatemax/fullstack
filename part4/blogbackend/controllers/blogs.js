@@ -15,7 +15,7 @@ blogRouter.post('/', async (request, response, next) => {
     const user = await User.findById(decodedToken.id)
 
     if(!body.title||!body.url)response.status(400).json({error:'provide a title and url'})
-    if(!body.user)response.status(400).json({error:'no username provided'})
+    if(!body.user)response.status(400).json({error:'no userid provided'})
 
     if (!body.likes) {
         body.likes = 0
@@ -38,21 +38,22 @@ blogRouter.post('/', async (request, response, next) => {
         response.json(savedBlog.toJSON())
     } catch(exception) {
         next(exception)
+        
     }
 })
 
 blogRouter.delete('/:id', async (request, response, next) => {
-    const body=request.body
+
     const token = request.token
     const decodedToken = jwt.verify(token, process.env.SECRET)
     const user = await User.findById(decodedToken.id)
     const blogToDelete = await Blog.findById(request.params.id)
     
-    console.log('deleting blog with id ',blogToDelete.user._id)
+    console.log('deleting blog with id ',blogToDelete.user.id)
 
 
     //check if user objects are equal. This prevents other users from deleting your content
-    if ( blogToDelete.user._id.toString() === user._id.toString() ) {
+    if ( blogToDelete.user.id.toString() === user.id.toString() ) {
     try {
       await Blog.findByIdAndRemove(request.params.id)
       response.status(204).end()
@@ -93,7 +94,7 @@ blogRouter.put('/:id', async (request, response, next) => {
         author: body.author,
         url: body.url,
         likes: body.likes,
-        user:body.user.id,
+        user:body.user,
         id:body.id
     }
     try {

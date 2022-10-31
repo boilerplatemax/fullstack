@@ -73,7 +73,7 @@ const App = () => {
         setAllBlogs(allBlogs.concat(returnedBlog))
         newBlog.current={}
       })
-
+      
       
   }
   const likeBlog = (blogObj) => {

@@ -36,8 +36,18 @@ const blogSchema = mongoose.Schema({
         type: Number
       },
     user: {
+      user: {
+        type: String
+      },
+      name: {
+        type: String
+      },
+      id: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
+      },
+        
+        
       },
   })
 
