@@ -18,7 +18,6 @@ const App = () => {
   const [likedBlogs, setLikedBlogs] = useState([])
   const [errorMessage, setErrorMessage] = useState(null)
 
-
   const [username, setUsername] = useState('') 
   const [password, setPassword] = useState('') 
   const [user, setUser] = useState(null)
@@ -124,6 +123,8 @@ const getLikedBlogs = async(id)=>{
     window.localStorage.removeItem('loggedblogappUser')
     setUser(null)
   }
+
+  const greatestToLeast = (b1, b2) => b2.likes - b1.likes
   return (
     <div>
       <h1>Blogs</h1>
@@ -141,14 +142,16 @@ const getLikedBlogs = async(id)=>{
     /> :
       <div>
         <p>{user.name} logged in</p>
-        <Togglable buttonLabel="Add new blog" ref={blogFormRef}>{<BlogForm handleBlogChange={handleBlogChange} addBlog={addBlog}/>}</Togglable>
+        <Togglable buttonLabel="Add new blog" ref={blogFormRef}>{
+          <BlogForm handleBlogChange={handleBlogChange} addBlog={addBlog} newBlog={newBlog.current}/>
+          }</Togglable>
         <button onClick={logOut}>log out</button>
       </div>
       }
       {user&&
       <div>
 
-        {allBlogs.map(blog => 
+        {allBlogs.sort(greatestToLeast).map(blog => 
           <Blog
             key={blog.id}
             blog={blog}

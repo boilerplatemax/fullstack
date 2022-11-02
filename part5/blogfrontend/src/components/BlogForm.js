@@ -1,8 +1,13 @@
 const blogForm=({handleBlogChange, addBlog})=>{
+  const submitHandler=e=>{
+    addBlog(e)
+    document.getElementById('blogForm').reset()
+  }
     return(
-    <form onSubmit={addBlog} className='blogform__form'>
+    <form onSubmit={e=>submitHandler(e)} className='blogform__form' id='blogForm'>
       <label>Title</label>
     <input
+      id='blogForm-input-title'
       onChange={
         (e)=>handleBlogChange({title:e.target.value})
         }
@@ -10,9 +15,13 @@ const blogForm=({handleBlogChange, addBlog})=>{
     />
     <label>Url</label>
       <input
+      id='blogForm-input-url'
       onChange={(e)=>handleBlogChange({url:e.target.value})}
     />
-    <button type="submit">save</button>
+    <button 
+    id='blogForm-submit'
+    type="submit"
+    >save</button>
   </form>
   )
   }
